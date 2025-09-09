@@ -1,0 +1,282 @@
+/* ===== Base / Theme ===== */
+:root{
+  --blue: #0071ce;   /* Walmart blue */
+  --yellow: #ffc220; /* Walmart yellow */
+  --ink: #0f172a;    /* Slate-900 */
+  --muted: #475569;  /* Slate-600 */
+  --border: #e2e8f0; /* Slate-200 */
+  --bg-soft: #f8fafc;/* Slate-50 */
+
+  --header-h: 56px;
+  --footer-h: 44px;
+
+  --radius-lg: 16px;
+  --shadow-lg: 0 24px 48px rgba(0,0,0,.18);
+  --shadow-md: 0 10px 20px rgba(0,0,0,.15), 0 6px 6px rgba(0,0,0,.10);
+}
+
+/* Ensure anything with the [hidden] attribute is truly hidden */
+[hidden]{ display:none !important; }
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body{
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: var(--ink);
+  background: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Accessibility helpers ===== */
+.visually-hidden{
+  position: absolute !important;
+  height: 1px; width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap;
+}
+
+/* ===== Header ===== */
+.site-header{
+  position: sticky;
+  top: 0;
+  height: var(--header-h);
+  background: var(--blue);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  padding: 0 16px;
+}
+.brand{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  letter-spacing: .2px;
+  user-select: none;
+}
+.logo{
+  color: var(--yellow);
+  font-size: 1.1rem;
+}
+.brand-text{ font-size: 1.05rem; }
+
+/* ===== Main hero area (must fit screen without vertical scroll) ===== */
+.site-main{
+  min-height: calc(100vh - var(--header-h) - var(--footer-h));
+  height: calc(100svh - var(--header-h) - var(--footer-h));
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+
+.hero{
+  height: 100%;
+  width: min(1100px, 96vw);
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  align-items: center;
+  justify-items: center;
+  text-align: center;
+  gap: 8px;
+}
+.hero h1{
+  margin: 0;
+  font-weight: 700;
+  font-size: clamp(1.6rem, 2.2vw + 1rem, 2.4rem);
+}
+.subtext{
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(.95rem, .6vw + .75rem, 1.125rem);
+}
+.hero-image{
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+  object-position: center;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+/* ===== Footer (fixed) ===== */
+.site-footer{
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: var(--footer-h);
+  background: var(--bg-soft);
+  color: #334155;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .95rem;
+  z-index: 5;
+}
+
+/* ===== Chat: Floating Action Button ===== */
+.chat-fab{
+  position: fixed;
+  right: 16px;
+  bottom: calc(var(--footer-h) + 16px);
+  width: 56px; height: 56px;
+  border-radius: 999px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  z-index: 1000; /* base: below window so window is always on top */
+}
+.chat-fab:focus-visible{
+  outline: 3px solid var(--yellow);
+  outline-offset: 3px;
+}
+/* When the chat is open (aria-expanded=true), push the icon behind & disable clicks */
+.chat-fab[aria-expanded="true"]{
+  z-index: 1;
+  opacity: 0;             /* visually tucks it away */
+  pointer-events: none;   /* prevents icon from blocking inputs */
+}
+
+/* ===== Chat: Window ===== */
+.chat-window{
+  position: fixed;
+  right: 16px;
+  bottom: calc(var(--footer-h) + 16px);
+  width: min(380px, 92vw);
+  height: min(520px, 70vh);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  z-index: 1002; /* above fab and everything else */
+}
+
+.chat-header{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--blue);
+  color: #fff;
+}
+.chat-header h2{
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+.chat-close{
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.chat-close:focus-visible{
+  outline: 3px solid var(--yellow);
+  outline-offset: 2px;
+}
+
+.chat-subline{
+  padding: 6px 14px;
+  font-size: .85rem;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-soft);
+}
+
+.chat-body{
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #fff;
+}
+
+/* Message styles: differentiate user vs (future) AI clearly */
+.msg{
+  max-width: 85%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  line-height: 1.25;
+  font-size: .95rem;
+}
+.msg.user{
+  align-self: flex-end;
+  background: #e6f0ff;
+  border: 1px solid #cfe0ff;
+  font-weight: 600;            /* user (question) slightly bolder */
+}
+.msg.ai{
+  align-self: flex-start;
+  background: #fff8e1;
+  border: 1px solid #ffe08a;
+  font-weight: 400;            /* AI (response) lighter weight for contrast */
+}
+
+.chat-input{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border-top: 1px solid var(--border);
+  background: #fff;
+}
+.chat-input input{
+  flex: 1; min-width: 0;
+  padding: 10px 12px;
+  font-size: 1rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+}
+.chat-input input:focus{
+  outline: 2px solid var(--yellow);
+  outline-offset: 1px;
+  border-color: var(--yellow);
+}
+.ask-btn{
+  background: var(--yellow);
+  color: #1f2937;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ask-btn:focus-visible{
+  outline: 3px solid #111827;
+  outline-offset: 2px;
+}
+
+/* ===== Responsive tweaks ===== */
+@media (max-width: 600px){
+  :root{
+    --header-h: 52px;
+    --footer-h: 40px;
+  }
+  .brand-text{ font-size: 1rem; }
+  .chat-window{
+    height: min(70vh, 420px);
+  }
+}

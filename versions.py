@@ -2,7 +2,9 @@ import importlib.metadata
 packages = [
     "langchain",
     "langchain_core",
-    "python-dotenv"
+    "python-dotenv",
+    "streamlit",
+    "ipykernel"
 ]
 for pkg in packages:
     try:

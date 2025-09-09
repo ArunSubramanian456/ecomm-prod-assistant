@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shop Buddy</title>
+
+  <!-- Inter font (Google Fonts) -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header" role="banner">
+    <div class="brand" aria-label="Shop Buddy">
+      <span class="logo" aria-hidden="true">✦</span>
+      <span class="brand-text">Shop Buddy</span>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="site-main" role="main">
+    <section class="hero" aria-labelledby="welcome-title">
+      <h1 id="welcome-title">Welcome to Shop Buddy</h1>
+      <p class="subtext">Your Smart Shopping Companion - Ask about prices, offers, reviews &amp; more!</p>
+
+      <!-- Local image -->
+      <img
+        src="f6634145-b9d9-4ea1-b5e5-cb705192c6fd.png"
+        alt="Illustration representing smart shopping assistance"
+        class="hero-image"
+      />
+    </section>
+  </main>
+
+  <!-- Footer (fixed) -->
+  <footer class="site-footer" role="contentinfo">
+    © <span id="year"></span> Shop Buddy • Demo UI
+  </footer>
+
+  <!-- Chat Floating Action Button -->
+  <button id="chatFab" class="chat-fab" aria-haspopup="dialog" aria-controls="chatWindow" aria-expanded="false" title="Open QuickCart Help">
+    💬
+    <span class="visually-hidden">Open chat</span>
+  </button>
+
+  <!-- Chat Window (starts hidden) -->
+  <aside id="chatWindow" class="chat-window" role="dialog" aria-modal="true" aria-labelledby="chatTitle" hidden>
+    <header class="chat-header">
+      <h2 id="chatTitle">QuickCart Help</h2>
+      <button id="chatClose" class="chat-close" aria-label="Close chat" title="Close">×</button>
+    </header>
+    <div class="chat-subline">Ask your queries</div>
+
+    <div id="chatBody" class="chat-body" aria-live="polite"></div>
+
+    <form id="chatForm" class="chat-input" autocomplete="off">
+      <label class="visually-hidden" for="chatMessage">Type your shopping question</label>
+      <input
+        id="chatMessage"
+        type="text"
+        placeholder="Type your shopping question…"
+        required
+        inputmode="text"
+        aria-label="Type your shopping question"
+      />
+      <button type="submit" class="ask-btn">Ask</button>
+    </form>
+  </aside>
+
+  <!-- Minimal inline JS for chat logic + current year -->
+  <script>
+    (function () {
+      const yearEl = document.getElementById('year');
+      yearEl.textContent = new Date().getFullYear();
+
+      const chatFab   = document.getElementById('chatFab');
+      const chatWin   = document.getElementById('chatWindow');
+      const chatClose = document.getElementById('chatClose');
+      const chatForm  = document.getElementById('chatForm');
+      const chatBody  = document.getElementById('chatBody');
+      const chatInput = document.getElementById('chatMessage');
+
+      let isOpen = false;
+
+      // Ensure hidden by default in case of copy/paste or CSS overrides
+      document.addEventListener('DOMContentLoaded', () => {
+        chatWin.hidden = true;
+        chatFab.setAttribute('aria-expanded', 'false');
+      });
+
+      function resetChatSession() {
+        chatBody.innerHTML = ''; // new session = no previous messages
+      }
+
+      function openChat() {
+        resetChatSession();                 // Always start fresh
+        chatWin.hidden = false;
+        isOpen = true;
+        chatFab.setAttribute('aria-expanded', 'true');
+        // Move focus to input
+        requestAnimationFrame(() => chatInput.focus());
+      }
+
+      function closeChat() {
+        chatWin.hidden = true;
+        isOpen = false;
+        chatFab.setAttribute('aria-expanded', 'false');
+        resetChatSession();                 // Clear on close
+        chatFab.focus();                    // Return focus to icon for accessibility
+      }
+
+      function appendMessage(role, text) {
+        const msg = document.createElement('div');
+        msg.className = 'msg ' + role;
+        msg.textContent = text;
+        chatBody.appendChild(msg);
+        chatBody.scrollTop = chatBody.scrollHeight;
+      }
+
+      // Event: Open/Close
+      chatFab.addEventListener('click', openChat);
+      chatClose.addEventListener('click', closeChat);
+
+      // Keyboard: ESC to close when open
+      document.addEventListener('keydown', (e) => {
+        if (isOpen && e.key === 'Escape') {
+          e.preventDefault();
+          closeChat();
+        }
+      });
+
+      // Submit message (show user message only)
+      chatForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const text = chatInput.value.trim();
+        if (!text) return;
+        appendMessage('user', text);        // Show user's message in the chat window
+        chatInput.value = '';
+        chatInput.focus();
+        // Future: fetch AI response from FastAPI and append as 'ai' message
+      });
+    })();
+  </script>
+</body>
+</html>

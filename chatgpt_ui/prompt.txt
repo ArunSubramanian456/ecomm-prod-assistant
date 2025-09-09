@@ -1,0 +1,62 @@
+Role: You are a senior front-end engineer.
+Goal: Create two files only named index.html and style.css. Do not add any extra files or external libraries (no Bootstrap, jQuery, Tailwind, etc.). Use only vanilla HTML, CSS, and a little inline JavaScript inside index.html.
+
+
+Requirements:
+
+1. Use semantic HTML5 structure with <header>, <main>, <footer>.
+
+
+2. <header> at the top with a small brand icon ✦ and the text Shop Buddy.
+
+3. <main> centered content with
+   - H1: Welcome to Shop Buddy
+
+   - Subtext: Your Smart Shopping Companion - Ask about prices, offers, reviews & more!
+
+   - An image under the subtext using my local file: f6634145-b9d9-4ea1-b5e5-cb705192c6fd.png
+
+   - The whole area (title + subtext + image) must fit on screen with NO vertical scrolling on common laptop screens
+
+4. <footer> must be fixed/pinned to the bottom of the screen always (never drift into the middle) and it should be always visible. 
+
+   - Text: © {current year} Shop Buddy • Demo UI
+
+5. Chat (bottom-right):
+
+   - By default, the site should show only a chat icon.
+
+   - Users should be able to click the chat icon to open the chat window. Chat window should have
+     - Header title: QuickCart Help
+     - A small line right under the header that says: Ask your queries
+     - Input Text box (placeholder: “Type your shopping question…”) and a button named "Ask".
+
+   - When the chat window is open, chat icon should go to the backend. Chat window should be at the front of the screen.
+
+   - Whatever the user types into the textbox should show up in the chat window when the "Ask" button is clicked or pressed "Enter" in their keyboard
+
+   - Users should be able to close the chat window to end the session using either Escape button on their keyboard or by clicking X on their chat window.
+     
+
+   - Behavior:
+     - Opening the widget always leads to new chat session; Closing the chat window clears the previous chat session.
+     - Clicking × on the header or pressing Esc closes the window and returns focus to the icon; 
+     - For now, you don't need to show any AI response message. AI response message will come from FAST API endpoints once app is fully built
+
+
+6. style.css:
+
+   - Professional, minimal
+
+   - Use Walmart-inspired colors: Blue, Yellow.
+
+   - Use the Inter font from Google Fonts.
+
+   - Make it mobile-friendly;
+
+   - Format the font for question and response appropriately so that it is easy to differentiate
+
+7. Code boundaries:
+
+   - Put all visual rules in style.css.
+   - Put the tiny JS for chat open/close, session reset, Esc-to-close inside index.html.
