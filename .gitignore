@@ -10,3 +10,7 @@ wheels/
 .venv
 ecommprod_env/
 .env
+
+.ipynb_checkpoints/
+archive/
+*.log
