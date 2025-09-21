@@ -1,10 +1,10 @@
 
 import streamlit as st
-# from prod_assistant.etl.data_scrapper import FlipkartScraper
-# from prod_assistant.etl.data_ingestion import DataIngestion
+from prod_assistant.etl.data_scrapper import FlipkartScraper
+from prod_assistant.etl.data_ingestion import DataIngestion
 import os
 
-# flipkart_scraper = FlipkartScraper()
+flipkart_scraper = FlipkartScraper()
 output_path = "data/product_reviews.csv"
 st.title("📦 Product Review Scraper")
 
@@ -40,8 +40,7 @@ if st.button("🚀 Start Scraping"):
         final_data = []
         for query in product_inputs:
             st.write(f"🔍 Searching for: {query}")
-            results = ""    
-            # results = flipkart_scraper.scrape_flipkart_products(query, max_products=max_products, review_count=review_count)
+            results = flipkart_scraper.scrape_flipkart_products(query, max_products=max_products, review_count=review_count)
             final_data.extend(results)
 
         unique_products = {}
@@ -51,7 +50,7 @@ if st.button("🚀 Start Scraping"):
 
         final_data = list(unique_products.values())
         st.session_state["scraped_data"] = final_data  # store in session
-        # flipkart_scraper.save_to_csv(final_data, output_path)
+        flipkart_scraper.save_to_csv(final_data, output_path)
         st.success("✅ Data saved to `data/product_reviews.csv`")
         st.download_button("📥 Download CSV", data=open(output_path, "rb"), file_name="product_reviews.csv")
 
@@ -60,9 +59,9 @@ if "scraped_data" in st.session_state and st.button("🧠 Store in Vector DB (As
     with st.spinner("📡 Initializing ingestion pipeline..."):
         try:
             ingestion = ""
-            # ingestion = DataIngestion()
+            ingestion = DataIngestion()
             st.info("🚀 Running ingestion pipeline...")
-            # ingestion.run_pipeline()
+            ingestion.run_pipeline()
             st.success("✅ Data successfully ingested to AstraDB!")
         except Exception as e:
             st.error("❌ Ingestion failed!")
