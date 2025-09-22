@@ -14,6 +14,7 @@ if "product_inputs" not in st.session_state:
 def add_product_input():
     st.session_state.product_inputs.append("")
 
+
 st.subheader("📝 Optional Product Description")
 product_description = st.text_area("Enter product description (used as an extra search keyword):")
 
@@ -25,6 +26,9 @@ for i, val in enumerate(st.session_state.product_inputs):
 st.session_state.product_inputs = updated_inputs
 
 st.button("➕ Add Another Product", on_click=add_product_input)
+# if st.button("➕ Add Another Product"):
+#     add_product_input()
+#     st.rerun()
 
 max_products = st.number_input("How many products per search?", min_value=1, max_value=10, value=1)
 review_count = st.number_input("How many reviews per product?", min_value=1, max_value=10, value=2)
