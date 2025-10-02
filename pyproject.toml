@@ -10,3 +10,15 @@ dependencies = [
     "python-dotenv==1.1.1",
     "streamlit==1.49.1",
 ]
+
+# Optional: authors, license
+authors = [{ name = "Arun Subramanian" }]
+license = { text = "MIT" }
+
+# Optional: CLI command
+[project.scripts]
+ecomm-assistant = "prod_assistant.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["prod_assistant*"]

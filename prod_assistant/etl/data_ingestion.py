@@ -91,6 +91,7 @@ class DataIngestion:
                     "total_reviews": entry["total_reviews"],
                     "price": entry["price"]
             }
+            # Create custom Document with reviews as content and rest of the info as metadata
             doc = Document(page_content=entry["top_reviews"], metadata=metadata)
             documents.append(doc)
 
