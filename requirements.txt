@@ -16,5 +16,6 @@ selenium==4.35.0
 undetected-chromedriver==3.5.5
 uvicorn==0.35.0
 structlog==25.4.0
+langgraph==0.6.8
 
 -e .

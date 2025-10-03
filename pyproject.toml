@@ -1,3 +1,8 @@
+[build-system]
+requires = ["setuptools>=68"]         # PEP 660 editable support ke liye naya setuptools
+build-backend = "setuptools.build_meta"
+
+
 [project]
 name = "ecomm-prod-assistant"
 version = "0.1.0"
@@ -17,7 +22,7 @@ license = { text = "MIT" }
 
 # Optional: CLI command
 [project.scripts]
-ecomm-assistant = "prod_assistant.cli:main"
+ecomm-assistant = "prod_assistant.router.main:run_server"
 
 [tool.setuptools.packages.find]
 where = ["."]
