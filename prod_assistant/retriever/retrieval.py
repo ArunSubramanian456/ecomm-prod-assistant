@@ -2,6 +2,11 @@ import os
 from langchain_astradb import AstraDBVectorStore
 from typing import List
 from langchain_core.documents import Document
+from graph_retriever.strategies import Eager
+from langchain.retrievers import ContextualCompressionRetriever
+from langchain.retrievers.document_compressors import LLMChainExtractor
+
+from langchain_graph_retriever import GraphRetriever
 from prod_assistant.utils.config_loader import load_config
 from prod_assistant.utils.model_loader import ModelLoader
 from dotenv import load_dotenv
@@ -54,9 +59,19 @@ class Retriever:
                 )
         if not self.retriever:
             top_k = self.config["retriever"]["top_k"] if "retriever" in self.config else 3
-            retriever=self.vstore.as_retriever(search_kwargs={"k": top_k})
+            retriever = GraphRetriever(store=self.vstore,
+                edges=[("product", "product_title"), ("price", "price"), ("rating", "rating"), ("reviews", "total_reviews")],
+                strategy=Eager(k=top_k, start_k=1, max_depth=2),
+            )
+            # retriever=self.vstore.as_retriever(search_kwargs={"k": top_k})
+            llm = self.model_loader.load_llm()
+            compressor = LLMChainExtractor.from_llm(llm)
+            self.retriever = ContextualCompressionRetriever(
+                base_compressor=compressor,
+                base_retriever=retriever
+            )
             print("Retriever loaded successfully.")
-            return retriever
+            return self.retriever
     
     def call_retriever(self,query):
         """Call the retriever model.
@@ -67,7 +82,7 @@ class Retriever:
 
 if __name__ == "__main__":
     retriever_obj = Retriever()
-    user_query = "Can you suggest a good laptop for gaming?"
+    user_query = "What is the price of Apple iPhone 15 Pro Max?"
     results = retriever_obj.call_retriever(user_query)
     
     for idx, doc in enumerate(results):

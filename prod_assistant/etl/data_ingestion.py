@@ -92,7 +92,8 @@ class DataIngestion:
                     "price": entry["price"]
             }
             # Create custom Document with reviews as content and rest of the info as metadata
-            doc = Document(page_content=entry["top_reviews"], metadata=metadata)
+            doc = Document(page_content=",".join([str(k)+":"+str(v) for k,v in entry.items()]), 
+                           metadata=metadata)
             documents.append(doc)
 
         print(f"Transformed {len(documents)} documents.")

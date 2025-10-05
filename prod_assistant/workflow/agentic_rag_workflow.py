@@ -7,6 +7,8 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
 from langgraph.checkpoint.memory import MemorySaver
+from langgraph.types import CachePolicy
+from langgraph.cache.memory import InMemoryCache
 
 from prod_assistant.prompt_library.prompts import PROMPT_REGISTRY, PromptType
 from prod_assistant.retriever.retrieval import Retriever
@@ -18,6 +20,8 @@ class AgenticRAG:
 
     class AgentState(TypedDict):
         messages: Annotated[Sequence[BaseMessage], add_messages]
+        revision_count: int # To track number of rewrites
+        max_revision_count: int # To limit the number of rewrites
 
     def __init__(self):
         self.retriever = Retriever().load_retriever()  # Initialize once
@@ -27,13 +31,14 @@ class AgenticRAG:
         self.tools = self._create_tools()
         self.llm_with_tools = self.llm.bind_tools(self.tools)
         self.workflow = self._build_workflow()
-        self.app = self.workflow.compile(checkpointer=self.checkpointer)
+        self.app = self.workflow.compile(checkpointer=self.checkpointer, cache=InMemoryCache())
 
     def _create_tools(self):
         @tool
         def retrieve_product_info(query: str) -> str:
             """Retrieve product information including prices, reviews, and details."""
             docs = self.retriever.invoke(query)
+            print(f"Context from Retriever:\n{self._format_docs(docs)}\n")
             return self._format_docs(docs)
         
         return [retrieve_product_info]
@@ -62,7 +67,8 @@ class AgenticRAG:
         
         system_prompt = """You are a helpful e-commerce assistant. 
         Use the retrieve_product_info tool when users ask about products, prices, or reviews.
-        Otherwise, respond directly to general questions."""
+        Otherwise, if the user asks about billing, shipping, returns or other ecommerce related topics, respond 'I'm sorry, but I can't assist with that.'.
+        For any other off topic queries, gently inform the user that you can only assist with e-commerce related questions."""
         
         prompt = ChatPromptTemplate.from_messages([
             ("system", system_prompt),
@@ -71,13 +77,14 @@ class AgenticRAG:
         
         chain = prompt | self.llm_with_tools
         response = chain.invoke({"messages": messages})
+        print(f"Assistant Response: {response}")
         return {"messages": [response]}
 
     def _generate_response(self, state: AgentState):
         print("--- GENERATE ---")
         messages = state["messages"]
         context = messages[-1].content
-        
+            
         question = messages[0].content
         prompt = ChatPromptTemplate.from_template(
             PROMPT_REGISTRY[PromptType.PRODUCT_BOT].template
@@ -85,12 +92,14 @@ class AgenticRAG:
         
         chain = prompt | self.llm | StrOutputParser()
         response = chain.invoke({"context": context, "question": question})
+        print(f"Generated Response: {response}")
         return {"messages": [AIMessage(content=response)]}
     
-    def _grade_documents(self, state: AgentState) -> Literal["generator", "rewriter"]:
+    def _grade_documents(self, state: AgentState) -> Literal["generate", "rewrite"]:
         print("--- GRADER ---")
         question = state["messages"][0].content
         docs = state["messages"][-1].content
+        current_count = state.get("revision_count", 0)
 
         prompt = PromptTemplate(
             template="""You are a grader. Question: {question}\nDocs: {docs}\n
@@ -99,15 +108,34 @@ class AgenticRAG:
         )
         chain = prompt | self.llm | StrOutputParser()
         score = chain.invoke({"question": question, "docs": docs})
-        return "generator" if "yes" in score.lower() else "rewriter"
+        
+        print(f"Revision count: {current_count}/{state.get('max_revision_count', 2)}")
+        
+        if "yes" in score.lower():
+            print("Documents are relevant. Moving to generate.")
+            return "generate"
+        elif current_count >= state.get("max_revision_count", 2):
+            print("Max revisions reached. Moving to generate.")
+            state["messages"].append(AIMessage(content="No relevant documents found. Proceeding with best effort response."))
+            return "generate"
+        else:
+            print("Documents not relevant. Rewriting query.")
+            return "rewrite"
     
     def _rewrite(self, state: AgentState):
         print("--- REWRITE ---")
         question = state["messages"][0].content
+        current_count = state.get("revision_count", 0)
+        
         new_q = self.llm.invoke(
-            [HumanMessage(content=f"Rewrite the query to be clearer: {question}")]
+            [HumanMessage(content=f"Rewrite the query to be clearer. \
+                          Specifically, include that the user is looking for information about product features, price, reviews and ratings: {question}")]
         )
-        return {"messages": [AIMessage(content=new_q.content)]}
+        print(f"Rewritten Query: {new_q.content}")
+        return {
+            "messages": [HumanMessage(content=new_q.content)],
+            "revision_count": current_count + 1
+        }
 
     # ---------- Build Workflow ----------
     def _build_workflow(self):
@@ -115,7 +143,7 @@ class AgenticRAG:
         
         # Add nodes
         workflow.add_node("assistant", self._assistant)
-        workflow.add_node("tools", ToolNode(self.tools))
+        workflow.add_node("tools", ToolNode(self.tools), cache_policy=CachePolicy(ttl=120),)
         workflow.add_node("generate", self._generate_response)
         workflow.add_node("rewrite", self._rewrite)
         
@@ -135,9 +163,8 @@ class AgenticRAG:
         # Edges taken after the `action` node is called.
         workflow.add_conditional_edges(
             "tools",
-            # Assess agent decision
             self._grade_documents,
-            {"generator": "generate", "rewriter": "rewrite"},
+            {"generate": "generate", "rewrite": "rewrite"},
         )
         
         workflow.add_edge("rewrite", "assistant")
@@ -149,11 +176,11 @@ class AgenticRAG:
     def run(self, query: str, thread_id : str = "default_thread") -> str:
         """Run the workflow for a given query."""
         result = self.app.invoke({"messages": [HumanMessage(content=query)]},
-                                 config = {"configurable": {"thread_id" : thread_id}})  # Pass thread_id for checkpointing
+                                 config = {"recursion_limit": 10,"configurable": {"thread_id" : thread_id}})  # Pass thread_id for checkpointing
         return result["messages"][-1].content
 
 
 if __name__ == "__main__":
     rag_agent = AgenticRAG()
-    answer = rag_agent.run("What is the price of Vivo T4?")
+    answer = rag_agent.run("Summarize the good, bad and ugly aspects of Apple iPhone 14 Pro Max based on user reviews.")
     print("\nFinal Answer:\n", answer)
