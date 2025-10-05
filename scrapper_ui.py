@@ -14,10 +14,6 @@ if "product_inputs" not in st.session_state:
 def add_product_input():
     st.session_state.product_inputs.append("")
 
-
-st.subheader("📝 Optional Product Description")
-product_description = st.text_area("Enter product description (used as an extra search keyword):")
-
 st.subheader("🛒 Product Names")
 updated_inputs = []
 for i, val in enumerate(st.session_state.product_inputs):
@@ -35,8 +31,6 @@ review_count = st.number_input("How many reviews per product?", min_value=1, max
 
 if st.button("🚀 Start Scraping"):
     product_inputs = [p.strip() for p in st.session_state.product_inputs if p.strip()]
-    if product_description.strip():
-        product_inputs.append(product_description.strip())
 
     if not product_inputs:
         st.warning("⚠️ Please enter at least one product name or a product description.")
