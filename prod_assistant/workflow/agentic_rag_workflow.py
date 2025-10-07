@@ -13,6 +13,7 @@ from langgraph.cache.memory import InMemoryCache
 from prod_assistant.prompt_library.prompts import PROMPT_REGISTRY, PromptType
 from prod_assistant.retriever.retrieval import Retriever
 from prod_assistant.utils.model_loader import ModelLoader
+from prod_assistant.evaluation.ragas_eval import evaluate_context_precision, evaluate_response_relevancy
 
 
 class AgenticRAG:
@@ -179,8 +180,48 @@ class AgenticRAG:
                                  config = {"recursion_limit": 10,"configurable": {"thread_id" : thread_id}})  # Pass thread_id for checkpointing
         return result["messages"][-1].content
 
+        # Future enhancement:
+        # function call to ragas evaluation functions
+        # evaluate_context_precision(query, response, retrieved_context)
+        # evaluate_response_relevancy(query, response, retrieved_context)
+        # based on the score from ragas evaluation
+        # if score is less than threshold
+        # rewrite the query and call the retriever again
+        # else
+        # return the response
+
 
 if __name__ == "__main__":
+    user_query = "What is the price and rating of Apple iPhone 14 Pro Max?"
     rag_agent = AgenticRAG()
-    answer = rag_agent.run("Summarize the good, bad and ugly aspects of Apple iPhone 14 Pro Max based on user reviews.")
-    print("\nFinal Answer:\n", answer)
+    response = rag_agent.run(user_query)
+    
+    retriever_obj = rag_agent.retriever
+
+    retrieved_docs = retriever_obj.invoke(user_query)
+    print(retrieved_docs)
+
+    def _format_docs(docs) -> str:
+        if not docs:
+            return "No relevant documents found."
+        formatted_chunks = []
+        for d in docs:
+            meta = d.metadata or {}
+            formatted = (
+                f"Title: {meta.get('product_title', 'N/A')}\n"
+                f"Price: {meta.get('price', 'N/A')}\n"
+                f"Rating: {meta.get('rating', 'N/A')}\n"
+                f"Reviews:\n{d.page_content.strip()}"
+            )
+            formatted_chunks.append(formatted)
+        return "\n\n---\n\n".join(formatted_chunks)
+    
+    retrieved_contexts = [_format_docs(retrieved_docs)]
+    print(retrieved_contexts)
+    
+    context_score = evaluate_context_precision(user_query,response,retrieved_contexts)
+    relevancy_score = evaluate_response_relevancy(user_query,response,retrieved_contexts)
+    
+    print("\n--- Evaluation Metrics ---")
+    print("Context Precision Score:", context_score)
+    print("Response Relevancy Score:", relevancy_score)
