@@ -19,5 +19,7 @@ structlog==25.4.0
 langgraph==0.6.8
 ragas==0.3.6
 langchain-graph-retriever==0.8.0
+fastmcp==2.11.3
+langchain-mcp-adapters==0.1.9
 
 -e .
