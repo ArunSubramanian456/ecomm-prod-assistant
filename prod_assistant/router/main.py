@@ -5,8 +5,9 @@ from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from langchain_core.messages import HumanMessage
+import asyncio
 
-from prod_assistant.workflow.agentic_rag_workflow import AgenticRAG
+from prod_assistant.workflow.agentic_rag_workflow_with_mcp import AgenticRAG
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -29,15 +30,15 @@ async def index(request: Request):
 @app.post("/get", response_class=HTMLResponse)
 async def chat(msg: str = Form(...)):
     """Call the Agentic RAG workflow."""
-    rag_agent = AgenticRAG()
-    answer = rag_agent.run(msg)   # run() already returns final answer string
+    rag_agent = await AgenticRAG.async_init()
+    answer = await rag_agent.run(msg)   # run() already returns final answer string
     print(f"Agentic Response: {answer}")
     return answer
 
 
 def run_server():
     """Entry point for the ecomm-assistant command."""
-    uvicorn.run(app, host="localhost", port=8000)
+    uvicorn.run(app, host="localhost", port=7000)
 
 
 if __name__ == "__main__":

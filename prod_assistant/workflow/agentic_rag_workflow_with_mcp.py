@@ -49,16 +49,32 @@ class AgenticRAG:
     
         self.mcp_client = MultiServerMCPClient(client_config_for_http)
         
-        async def create_tools():
-            tools = await self.mcp_client.get_tools()
-            return tools
+        # async def create_tools():
+        #     await self.mcp_client.get_tools()
+            
+        # # Load MCP tools
+        # self.mcp_tools = asyncio.run(create_tools())
+        # self.llm_with_tools = self.llm.bind_tools(self.mcp_tools)
+        # self.workflow = self._build_workflow()
+        # self.app = self.workflow.compile(checkpointer=self.checkpointer, cache=InMemoryCache())
         
-        # Load MCP tools
-        self.mcp_tools = asyncio.run(create_tools())
-        self.llm_with_tools = self.llm.bind_tools(self.mcp_tools)
-        self.workflow = self._build_workflow()
-        self.app = self.workflow.compile(checkpointer=self.checkpointer, cache=InMemoryCache())
+        self.mcp_tools = None
+        self.llm_with_tools = None
+        self.workflow = None
+        self.app = None
+        
+        
+    # Add a async factory method to initialize async components
+    @classmethod
+    async def async_init(cls):
+        instance = cls()
+        instance.mcp_tools = await instance.mcp_client.get_tools()
+        instance.llm_with_tools = instance.llm.bind_tools(instance.mcp_tools)
+        instance.workflow = instance._build_workflow()
+        instance.app = instance.workflow.compile(checkpointer=instance.checkpointer, cache=InMemoryCache())
+        return instance
 
+    
     # ---------- Helpers ----------
     def _format_docs(self, docs) -> str:
         if not docs:
@@ -207,8 +223,11 @@ class AgenticRAG:
 
 if __name__ == "__main__":
 
-    user_query = "What is the price and rating of Apple iPhone 17?"
-    rag_agent = AgenticRAG()
-    response = asyncio.run(rag_agent.run(user_query))
-
+    async def main():
+        user_query = "What is the price and rating of Apple iPhone 17?"
+        rag_agent = await AgenticRAG.async_init()
+        response = await rag_agent.run(user_query)
+        return response
+    
+    response = asyncio.run(main())
     print(response)
