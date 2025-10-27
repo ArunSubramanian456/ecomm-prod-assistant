@@ -32,31 +32,22 @@ class AgenticRAG:
         self.checkpointer = MemorySaver()
         
         # MCP Client Init
-        # client_config_for_stdio = {
-        #     "hybrid_search": {
-        #         "command": "python",
-        #         "args": ["prod_assistant/mcp_servers/product_search_server.py"],
-        #         "transport": "stdio"
-        #     }
-        # }
+        client_config_for_stdio = {
+            "hybrid_search": {
+                "command": "python",
+                "args": ["prod_assistant/mcp_servers/product_search_server.py"],
+                "transport": "stdio"
+            }
+        }
         
         client_config_for_http = {
             "hybrid_search": {
                 "transport": "streamable_http",
-                "url": "http://localhost:8000/mcp/"
+                "url": "http://localhost:8001/mcp/"
             }
         }
     
-        self.mcp_client = MultiServerMCPClient(client_config_for_http)
-        
-        # async def create_tools():
-        #     await self.mcp_client.get_tools()
-            
-        # # Load MCP tools
-        # self.mcp_tools = asyncio.run(create_tools())
-        # self.llm_with_tools = self.llm.bind_tools(self.mcp_tools)
-        # self.workflow = self._build_workflow()
-        # self.app = self.workflow.compile(checkpointer=self.checkpointer, cache=InMemoryCache())
+        self.mcp_client = MultiServerMCPClient(client_config_for_stdio)
         
         self.mcp_tools = None
         self.llm_with_tools = None
@@ -224,7 +215,7 @@ class AgenticRAG:
 if __name__ == "__main__":
 
     async def main():
-        user_query = "What is the price and rating of Apple iPhone 17?"
+        user_query = "What is the price and rating of Apple iPhone 14 Pro Max?"
         rag_agent = await AgenticRAG.async_init()
         response = await rag_agent.run(user_query)
         return response

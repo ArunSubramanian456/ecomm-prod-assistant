@@ -1,16 +1,18 @@
 import asyncio
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langchain_mcp_adapters.tools import load_mcp_tools
+import sys
+
 
 async def main():
     
-    # client_config_for_stdio = {
-    #     "hybrid_search": {
-    #         "command": "python",
-    #         "args": [r"C:\Users\aruns\Documents\Learning\LLMOps\ecomm-prod-assistant\prod_assistant\mcp_servers\product_search_server.py"],
-    #         "transport": "stdio"
-    #     }
-    # }
+    client_config_for_stdio = {
+        "hybrid_search": {
+            "command": "python",
+            "args": [r"C:\Users\aruns\Documents\Learning\LLMOps\ecomm-prod-assistant\prod_assistant\mcp_servers\product_search_server.py"],
+            "transport": "stdio"
+        }
+    }
     
     client_config_for_http = {
         "hybrid_search": {
@@ -19,7 +21,7 @@ async def main():
         }
     }
             
-    client = MultiServerMCPClient(client_config_for_http)
+    client = MultiServerMCPClient(client_config_for_stdio)
 
     tools = await client.get_tools()
     print("Available tools:", [t.name for t in tools])
@@ -43,4 +45,8 @@ async def main():
     
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    if sys.platform == "win32":
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+        asyncio.run(main())
+    else:
+        asyncio.run(main())

@@ -23,28 +23,35 @@ class Retriever:
         """
         self.model_loader=ModelLoader()
         self.config=load_config()
-        self.load_env_variables()
+        
+        # self.load_env_variables()
+        self.google_api_key = self.model_loader.api_key_mgr.get("GOOGLE_API_KEY")
+        self.db_api_endpoint = self.model_loader.api_key_mgr.get("ASTRA_DB_API_ENDPOINT")
+        self.db_application_token = self.model_loader.api_key_mgr.get("ASTRA_DB_APPLICATION_TOKEN")
+        self.db_keyspace = self.model_loader.api_key_mgr.get("ASTRA_DB_KEYSPACE")
+        
         self.vstore = None
         self.retriever = None
     
     def load_env_variables(self):
         """Load environment variables for the retriever.
         """
-        load_dotenv()
-         
+        # load_dotenv()
+
         required_vars = ["GOOGLE_API_KEY", "ASTRA_DB_API_ENDPOINT", "ASTRA_DB_APPLICATION_TOKEN", "ASTRA_DB_KEYSPACE"]
-        
-        missing_vars = [var for var in required_vars if os.getenv(var) is None]
+
+        missing_vars = [var for var in required_vars if self.model_loader.api_key_mgr.get(var) is None]
+        print(f"Manual Check of Missing vars - {missing_vars}")
         
         if missing_vars:
             raise EnvironmentError(f"Missing environment variables: {missing_vars}")
 
-        self.google_api_key = os.getenv("GOOGLE_API_KEY")
-        self.db_api_endpoint = os.getenv("ASTRA_DB_API_ENDPOINT")
-        self.db_application_token = os.getenv("ASTRA_DB_APPLICATION_TOKEN")
-        self.db_keyspace = os.getenv("ASTRA_DB_KEYSPACE")
-    
-    
+        self.google_api_key = self.model_loader.api_key_mgr.get("GOOGLE_API_KEY")
+        self.db_api_endpoint = self.model_loader.api_key_mgr.get("ASTRA_DB_API_ENDPOINT")
+        self.db_application_token = self.model_loader.api_key_mgr.get("ASTRA_DB_APPLICATION_TOKEN")
+        self.db_keyspace = self.model_loader.api_key_mgr.get("ASTRA_DB_KEYSPACE")
+
+
     def load_retriever(self):
         """Load the retriever model.
         """
@@ -55,7 +62,7 @@ class Retriever:
                 embedding= self.model_loader.load_embeddings(),
                 collection_name=collection_name,
                 api_endpoint=self.db_api_endpoint,
-                token=self.db_application_token,
+                token= self.db_application_token,
                 namespace=self.db_keyspace,
                 )
         if not self.retriever:

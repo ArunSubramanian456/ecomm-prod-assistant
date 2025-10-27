@@ -6,7 +6,7 @@ embedding_model:
   model_name: "models/text-embedding-004"
 
 retriever:
-  top_k: 4
+  top_k: 8
 
 llm:
   groq:
@@ -20,3 +20,8 @@ llm:
     model_name: "gemini-2.0-flash"
     temperature: 0
     max_output_tokens: 2048
+
+  openai:
+     provider: "openai"
+     model_name: "gpt-4o"
+     temperature: 0
