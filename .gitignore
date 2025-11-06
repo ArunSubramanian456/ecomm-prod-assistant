@@ -16,3 +16,7 @@ archive/
 *.log
 
 pdfs
+
+video_script.md
+demo_preparation.md
+demo_queries.py
