@@ -43,11 +43,11 @@ class AgenticRAG:
         client_config_for_http = {
             "hybrid_search": {
                 "transport": "streamable_http",
-                "url": "http://localhost:8001/mcp/"
+                "url": "http://localhost:8000/mcp/"
             }
         }
     
-        self.mcp_client = MultiServerMCPClient(client_config_for_stdio)
+        self.mcp_client = MultiServerMCPClient(client_config_for_http)
         
         self.mcp_tools = None
         self.llm_with_tools = None

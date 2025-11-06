@@ -39,17 +39,9 @@ class ModelLoader:
     """
 
     def __init__(self):
-        if os.getenv("ENV", "local").lower() != "production":
-            load_dotenv()
-            log.info("Running in LOCAL mode: .env loaded")
-        else:
-            log.info("Running in PRODUCTION mode")
-
         self.api_key_mgr = ApiKeyManager()
         self.config = load_config()
         log.info("YAML config loaded", config_keys=list(self.config.keys()))
-
-    
 
     def load_embeddings(self):
         """
