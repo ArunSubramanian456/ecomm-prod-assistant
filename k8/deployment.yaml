@@ -18,7 +18,10 @@ spec:
       - name: product-assistant
         image: 160885256293.dkr.ecr.us-east-1.amazonaws.com/product-assistant:latest
         ports:
-        - containerPort: 8000
+        - name: fastapi-api
+          containerPort: 8001
+        - name: fastmcp-api
+          containerPort: 8000
         env:                              
         - name: OPENAI_API_KEY
           valueFrom:

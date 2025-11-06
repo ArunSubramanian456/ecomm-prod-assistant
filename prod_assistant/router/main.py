@@ -38,7 +38,7 @@ async def chat(msg: str = Form(...)):
 
 def run_server():
     """Entry point for the ecomm-assistant command."""
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, workers=4, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8001, workers=2)
 
 
 if __name__ == "__main__":

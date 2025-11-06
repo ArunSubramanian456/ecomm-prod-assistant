@@ -17,7 +17,8 @@ COPY . .
 
 RUN pip install --no-cache-dir -e .
 
-EXPOSE 8000
+# Exposes the FastAPI port
+EXPOSE 8001
 
 # run the commands to start both services
 CMD ["bash", "-c", "python prod_assistant/mcp_servers/product_search_server.py & python prod_assistant/router/main.py"]
